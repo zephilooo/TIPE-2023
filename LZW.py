@@ -3,8 +3,7 @@ def compress(uncompressed):
 
     # Build the dictionary.
     dict_size = 256
-    dictionary = dict((chr(i), i) for i in range(dict_size))
-    # in Python 3: dictionary = {chr(i): i for i in range(dict_size)}
+    dictionary = {chr(i): i for i in range(dict_size)}
 
     w = ""
     result = []
@@ -31,8 +30,7 @@ def decompress(compressed):
 
     # Build the dictionary.
     dict_size = 256
-    dictionary = dict((i, chr(i)) for i in range(dict_size))
-    # in Python 3: dictionary = {i: chr(i) for i in range(dict_size)}
+    dictionary = {i: chr(i) for i in range(dict_size)}
 
     # use StringIO, otherwise this becomes O(N^2)
     # due to string concatenation in a loop
@@ -57,7 +55,7 @@ def decompress(compressed):
 
 
 # How to use:
-compressed = compress('TOBEORNOTTOBEORTOBEORNOT')
-print (compressed)
+compressed = compress('TOBEORNOTTOBEORTOBEORNOTTOBLERONETOTOBTOB')
+print(len(compressed))
 decompressed = decompress(compressed)
-print (decompressed)
+print(len(decompressed))
