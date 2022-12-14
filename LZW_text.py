@@ -1,5 +1,8 @@
 import random as rd
 from math import log
+import pickle
+import struct
+
 # def make_dict(n):
 #     d = {i: chr(i) for i in range(256)}
 #     for i in range(256,256+n):
@@ -26,20 +29,23 @@ from math import log
 
 
 def afficher(texte):
+    """ Indique le nombre de bits nécessaires à l'encodage du texte dans sa forme brute"""
     dico = {chr(i): i for i in range(256)}
     n = len(texte)
     if n<10000:
         print("Le texte originel était le suivant : " + '\n'+ texte )
-    print("En supposant que chaque caractère est codé sur 8 bits (1 octet), le texte nécessite {} bits, soit {} octets pour être encodé".format(8*n,n))
+    print("En supposant que chaque caractère est codé sur 8 bits (1 octet), le texte nécessite {} bits, soit {} Ko pour être encodé".format(8*n,n/1000))
 
 
 def afficher_compressed_bin(liste):
-    "On suppose que l'entier maximal est inférieur à 65536"
+    """ Indique le nombre de bits nécessaires à l'encodage du texte dans sa forme compressée"""
     n = len(liste)
+    print(n)
     m = max(liste)
     bits_max = int(log(m)/log(2)) +1
     p=bits_max*n
-    print("La transformation LZW permet de réduire le nombre de bits nécessaires à l'écriture du texte à {} bits, soit {} octets".format(p,2*n))
+    print("La transformation LZW permet de réduire le nombre de bits nécessaires à l'écriture du texte à {} bits, soit {} Ko \n".format(p,2*n/1000))
+    print("Remarque : la longueur du dictionnaire qui a été généré pour encoder le texte est de {}".format(n))
 
 def compresse(chaine):
     "Prend en entrée une chaine de caractère et renvoie une liste dont les élements sont les valeurs codées en entiers décimaux permettant de compresser la chaîne"
@@ -54,7 +60,7 @@ def compresse(chaine):
         if sequenceCourante in dico:
             sequence = sequenceCourante
         else:
-            # print(sequence)
+            #print(sequence)
             res.append(dico[sequence])
             dico[sequenceCourante] = dico_size
             sequence = caractereCourant
@@ -62,6 +68,30 @@ def compresse(chaine):
 
     res.append(dico[sequence])
     return res
+
+def compresse(chaine):
+    "Prend en entrée une chaine de caractère et renvoie une liste dont les élements sont les valeurs codées en entiers décimaux permettant de compresser la chaîne"
+    dico_size = 256
+    dico = {chr(i): i for i in range(dico_size)}
+
+    res = []
+    sequence = ""
+
+
+    for caractereCourant in chaine:
+        sequenceCourante = sequence + caractereCourant
+        if sequenceCourante in dico:
+            sequence = sequenceCourante
+        else:
+            res.append(dico[sequence])
+            dico[sequenceCourante] = dico_size
+            sequence = caractereCourant
+            dico_size += 1
+
+    res.append(dico[sequence])
+    return res
+
+
 
 def decompresse(compressed):
     """Décompresse une liste d'entiers en chaîne de caractères"""
@@ -83,8 +113,6 @@ def decompresse(compressed):
         else:
             raise ValueError("Problème de décompression")
         result.write(entree)
-        # print(entree)
-
         dico[dict_size] = sequence + entree[0]
         dict_size += 1
 
@@ -100,28 +128,30 @@ def recup_text(namefile):
         txt += ligne
     return txt
 
-texte = recup_text("tocompress.txt")
-print(texte)
 
-def affichage_style(texte):
-    i = 0
-    print('SYSencrypt')
-    dico = {i: chr(i) for i in range(256)}
-    while i<500000:
-        if i*2==500000:
-            j=0
-            while j< 500000:
-                print('',end='-')
-                j+= 1
-        if i%1000==0:
-            print('SYSencrypt')
-        i+=1
-        print(dico[rd.randint(41,125)],end="")
+def ecrire_code_bin(liste):
+    with open('compressed_maison_pack.bin','wb') as file:
+        for i in liste:
+            file.write(struct.pack("i", i))
 
-    print('\n\n\n')
+    with open('compressed_maison_pickle.bin','wb') as file:
+        pickle.dump(liste,file)
+
+    # with open('test.txt', 'wb') as file:
+    #     for elem in liste:
+    #         #print(chr(elem).encode('utf-16'))
+    #         file.write(chr(elem).encode('utf-16'))
+
+def main(texte):
     c = compresse(texte)
-    afficher_compressed_bin(c)
-    afficher(texte)
-    print(decompresse(c))
+    code_bin = [bin(n) for n in c]
 
-affichage_style(texte)
+    afficher(texte)
+    ecrire_code_bin(c)
+    afficher_compressed_bin(c)
+
+    #print(decompresse(c))
+
+texte = recup_text("tocompress.txt")
+
+main(texte)
