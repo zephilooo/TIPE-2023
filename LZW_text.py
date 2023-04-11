@@ -55,28 +55,6 @@ def compresse(chaine):
     res = []
     sequence = ""
 
-    for caractereCourant in chaine:
-        sequenceCourante = sequence + caractereCourant
-        if sequenceCourante in dico:
-            sequence = sequenceCourante
-        else:
-            #print(sequence)
-            res.append(dico[sequence])
-            dico[sequenceCourante] = dico_size
-            sequence = caractereCourant
-            dico_size += 1
-
-    res.append(dico[sequence])
-    return res
-
-def compresse(chaine):
-    "Prend en entrée une chaine de caractère et renvoie une liste dont les élements sont les valeurs codées en entiers décimaux permettant de compresser la chaîne"
-    dico_size = 256
-    dico = {chr(i): i for i in range(dico_size)}
-
-    res = []
-    sequence = ""
-
 
     for caractereCourant in chaine:
         sequenceCourante = sequence + caractereCourant
